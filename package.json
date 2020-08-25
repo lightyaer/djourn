@@ -1,0 +1,28 @@
+{
+  "name": "djourn",
+  "version": "0.0.1",
+  "description": "A Diary, Journal & Articles app",
+  "main": "index.js",
+  "repository": "git@github.com:lightyaer/djourn.git",
+  "author": "Dhananjay Naik <mmnyed@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "ui",
+    "shared",
+    "web",
+    "server"
+  ],
+  "scripts": {
+    "web:serve": "yarn workspace web serve"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,vue}": [
+      "yarn workspace web lint",
+      "git add"
+    ]
+  }
+}
