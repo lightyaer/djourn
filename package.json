@@ -14,14 +14,15 @@
     "server"
   ],
   "scripts": {
-    "web:serve": "yarn workspace web serve"
+    "web:serve": "yarn workspace web serve",
+    "web:lint": "yarn workspace web lint"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
   },
   "lint-staged": {
     "*.{js,jsx,vue}": [
-      "yarn workspace web lint",
+      "yarn run web:lint",
       "git add"
     ]
   }
