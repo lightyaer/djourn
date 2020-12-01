@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Journals
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  updateJournalsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ./updateJournal.putItemHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+        Timeout: 100Ō
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+        JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /journals/{journal_id}
+            Method: PATCH
+
+  getJournalsByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ./getJournalsById.getJournalsByIdHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: GET on JOURNALS.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+          JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /journals/{journal_id}
+            Method: GET
+
+  getJournalsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ./getJournals.getJournalsHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: GET on JOURNALS.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+          JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /journals
+            Method: GET
+
+  JournalTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: journal_id
+          AttributeType: S
+        - AttributeName: content
+          AttributeType: S
+        - AttributeName: title
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+        - AttributeName: updated_at
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: url
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 5
+      TableName: journals
+      KeySchema:
+        - AttributeName: journal_id
+          KeyType: HASH
+        - AttributeName: updated_at
+          KeyType: RANGE
+        - AttributeName: user_id
+          KeyType: HASH

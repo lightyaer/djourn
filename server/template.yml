@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  server
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  JournalsApp:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: src/journals/template.yml
+
+  ArticlesApp:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: src/articles/template.yml
+
+  CommentsApp:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: src/comments/template.yml
+
+  RepliesApp:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: src/replies/template.yml
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

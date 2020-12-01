@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Articles
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  RepliesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: reply_id
+          AttributeType: S
+        - AttributeName: comment_id
+          AttributeType: S
+        - AttributeName: content
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+        - AttributeName: updated_at
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: url
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 5
+      TableName: journals
+      KeySchema:
+        - AttributeName: reply_id
+          KeyType: HASH
+        - AttributeName: updated_at
+          KeyType: RANGE
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: comment_id
+          KeyType: HASH
