@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: server
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  AppName:
+    Type: String
+    Description: Name of the application
+  ClientDomains:
+    Type: String
+    Description: Array of domains allowed to this user pool
+  AdminEmail:
+    Type: String
+    Description: Email address for adminstrator
+  AddGroupsToScopes:
+    Type: String
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+Resources:
+  Auth:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ../../src/auth/template.yml
+      Parameters:
+        AppName:
+          Ref: AppName
+        ClientDomains:
+          Ref: ClientDomains
+        AdminEmail:
+          Ref: AdminEmail
+        AddGroupsToScopes:
+          Ref: AddGroupsToScopes
+  JournalsApp:
+    Type: AWS::Serverless::Application
+    DependsOn: Auth
+    Properties:
+      Location: ../../src/journals/template.yml

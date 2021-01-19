@@ -1,37 +1,40 @@
 AWSTemplateFormatVersion: 2010-09-09
+
 Description: >-
   Journals
+
 Transform: AWS::Serverless-2016-10-31
+#
+#Parameters:
+#  UserPoolArn:
+#    Type: String
+#    Description: Cognito User Pool ARN
+
 Resources:
-  updateJournalsFunction:
-    Type: AWS::Serverless::Function
+  journalsApi:
+    Type: AWS::Serverless::Api
     Properties:
-      Handler: ./updateJournal.putItemHandler
-      Runtime: nodejs12.x
-      MemorySize: 128
-        Timeout: 100Ō
-      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref JournalTable
-      Environment:
-        Variables:
-        JOURNAL_TABLE: !Ref JournalTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /journals/{journal_id}
-            Method: PATCH
+      StageName: dev
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+  #      Auth:
+  #        DefaultAuthorizer: UserPoolAuthorizer
+  #        AddDefaultAuthorizerToCorsPreflight: False
+  #        Authorizers:
+  #          UserPoolAuthorizer:
+  #            UserPoolArn: !Ref UserPoolArn
 
   getJournalsByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: ./
       Handler: ./getJournalsById.getJournalsByIdHandler
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
-      Description: GET on JOURNALS.
+      Description: GET By ID on JOURNALS.
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref JournalTable
@@ -42,12 +45,14 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref journalsApi
             Path: /journals/{journal_id}
             Method: GET
 
   getJournalsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: ./
       Handler: ./getJournals.getJournalsHandler
       Runtime: nodejs12.x
       MemorySize: 128
@@ -63,8 +68,78 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref journalsApi
             Path: /journals
             Method: GET
+
+  createJournalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: ./createJournal.createJournalHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+          JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref journalsApi
+            Path: /journals
+            Method: POST
+
+  updateJournalsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: ./updateJournal.updateJournalHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: PATH on Journals.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+          JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref journalsApi
+            Path: /journals/{journal_id}
+            Method: PATCH
+
+  removeJournalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: ./removeJournal.removeJournalHandler
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JournalTable
+      Environment:
+        Variables:
+          JOURNAL_TABLE: !Ref JournalTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref journalsApi
+            Path: /journals/{journal_id}
+            Method: DELETE
 
   JournalTable:
     Type: AWS::DynamoDB::Table
@@ -93,5 +168,8 @@ Resources:
           KeyType: HASH
         - AttributeName: updated_at
           KeyType: RANGE
-        - AttributeName: user_id
-          KeyType: HASH
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${journalsApi}.execute-api.${AWS::Region}.amazonaws.com"

@@ -1,31 +1,35 @@
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.JOURNAL_TABLE;
 
-const dynamodb = require('aws-sdk/clients/dynamodb');
+const _ = require("lodash");
+const dynamodb = require("aws-sdk/clients/dynamodb");
 const docClient = new dynamodb.DocumentClient();
 
-exports.createJournalHandler = async (event) => {
-    if (event.httpMethod !== 'POST') {
-        throw new Error(`postMethod only accepts POST method, you tried: ${event.httpMethod} method.`);
-    }
-    console.info('received:', event);
+exports.createJournalHandler = async event => {
+  console.info("received:", event);
+  const body = JSON.parse(_.get(event, "body"));
 
-    const body = JSON.parse(event.body)
-    const id = body.id;
-    const name = body.name;
+  const newJournal = _.pick(body, [
+    "content",
+    "updated_at",
+    "title",
+    "created_at"
+  ]);
 
-    var params = {
-        TableName : tableName,
-        Item: { id : id, name: name }
-    };
+  const params = {
+    TableName: tableName,
+    Item: newJournal
+  };
 
-    const result = await docClient.put(params).promise();
+  const result = await docClient.put(params).promise();
 
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(body)
-    };
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify({ body, status: result })
+  };
 
-    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
-    return response;
-}
+  console.info(
+    `response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`
+  );
+  return response;
+};

@@ -2,28 +2,64 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   server
 Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  AppName:
+    Type: String
+    Description: Name of the application
+  ClientDomains:
+    Type: String
+    Description: Array of domains allowed to this user pool
+  AdminEmail:
+    Type: String
+    Description: Email address for adminstrator
+  AddGroupsToScopes:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+
 Resources:
+  Auth:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: src/auth/template.yml
+      Parameters:
+        AppName: !Ref AppName
+        ClientDomains: !Ref ClientDomains
+        AdminEmail: !Ref AdminEmail
+        AddGroupsToScopes: !Ref AddGroupsToScopes
+
   JournalsApp:
     Type: AWS::Serverless::Application
+    DependsOn: Auth
     Properties:
       Location: src/journals/template.yml
-
-  ArticlesApp:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: src/articles/template.yml
-
-  CommentsApp:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: src/comments/template.yml
-
-  RepliesApp:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: src/replies/template.yml
+      Parameters:
+        UserPoolArn:
+          Fn::ImportValue: !Sub ${AWS::StackName}-UserPoolArn
+#  ArticlesApp:
+#    Type: AWS::Serverless::Application
+#    Properties:
+#      Location: src/articles/template.yml
+#
+#  CommentsApp:
+#    Type: AWS::Serverless::Application
+#    Properties:
+#      Location: src/comments/template.yml
+#
+#  RepliesApp:
+#    Type: AWS::Serverless::Application
+#    Properties:
+#      Location: src/replies/template.yml
 
 Outputs:
-  WebEndpoint:
-    Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  UserPoolArn:
+    Description: "User Pool ARN"
+    Value:
+      Fn::ImportValue: !Sub ${AWS::StackName}-UserPoolArn
+
+  AuthUrl:
+    Description: "Url used for Authentication"
+    Value: "https://auth.djourn.xyz"
